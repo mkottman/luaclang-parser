@@ -13,6 +13,17 @@ Requirements
 * Lua 5.1
 * LLVM/Clang - read the [getting started](http://clang.llvm.org/get_started.html) guide to find out how to obtain Clang from source. `libclang` is built and installed along with Clang compiler.
 
+Building
+========
+
+`luaclang-parser` uses CMake to find your Lua installation and `libclang`. The preferred way to build the module is this:
+
+	luaclang-parser$ mkdir build; cd build
+	luaclang-parser/build$ cmake ..
+	luaclang-parser/build$ make
+
+The example uses this directory layout to find the `luaclang-parser` without the need to install it system-wide.
+
 Overview
 ========
 

@@ -60,6 +60,9 @@ do
             DBG(file, fromRow, fromCol, toRow, toCol)
             return ''
         end
+        if toRow - fromRow > 3 then
+            return ('%s: %d:%d - %d:%d'):format(file, fromRow, fromCol, toRow, toCol)
+        end
         if not cache[file] then
             local f = assert(io.open(file))
             local t, n = {}, 0
@@ -96,11 +99,11 @@ function findChildrenByType(cursor, type)
     local children, n = {}, 0
     local function finder(cur)
         for i,c in ipairs(cur:children()) do
-            if c and c:kind() == type then
+            if c and (c:kind() == type) then
                 n = n + 1
                 children[n] = c
-                finder(c)
             end
+            finder(c)
         end
    end
    finder(cursor)
@@ -134,11 +137,44 @@ SECTION 'Creating index'
 local index = clang.createIndex(false, true)
 
 SECTION 'Creating translation unit'
---- [[
+---[[
  local tu = assert(index:parse(arg))
 --[=[]]
  local tu = assert(index:load('precompiled.ast'))
 --]=]
+
+SECTION "Writing code.xml - raw AST"
+
+local function trim(s)
+ local from = s:match"^%s*()"
+ local res = from > #s and "" or s:match(".*%S", from)
+ return (res:gsub('&', '&amp;'):gsub('<', '&lt;'):gsub('>', '&gt;'):gsub('"', '&quot;'))
+end
+
+local xml = assert(io.open('code.xml', 'w'))
+local function dumpXML(cur)
+    local tag = cur:kind()
+    local name = trim(cur:name())
+    local attr = ' name="' .. name .. '"'
+    local dname = trim(cur:displayName())
+    if dname ~= name then
+        attr = attr .. ' display="' .. dname .. '"'
+    end
+    attr = attr ..' text="' .. trim(getExtent(cur:location())) .. '"' 
+    local children = cur:children()
+    if #children == 0 then
+        xml:write('<', tag, attr, ' />\n')
+    else
+        xml:write('<', tag, attr, ' >\n')
+        for _,c in ipairs(children) do
+            dumpXML(c)
+        end
+        xml:write('</',tag,'>\n')
+    end
+end
+dumpXML(tu:cursor())
+
+SECTION "Finished"
 
 local default_table_meta = {}
 function new_default_table(t)
@@ -251,7 +287,6 @@ function processMethod(method, kind, access)
     }
 end
 
-
 SECTION "Processing classes"
 
 local classes = findChildrenByType(tu:cursor(), 'ClassDecl')
@@ -261,6 +296,8 @@ for _, class in ipairs(classes) do
 
     if name ~= dname then
         DBG(name, '->', dname)
+    else
+        DBG(name)
     end
 
     local DBClass = DB[class:displayName()]
