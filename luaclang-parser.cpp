@@ -488,6 +488,15 @@ static int l_displayName(lua_State *L) {
     return 1;
 }
 
+static int l_parent(lua_State *L) {
+    CXCursor cur = toCursor(L, 1);
+    CXCursor *parent = newCursor(L);
+    *parent = clang_getCursorSemanticParent(cur);
+    if (clang_Cursor_isNull(*parent))
+        lua_pushnil(L);
+    return 1;
+}
+
 static int l_arguments(lua_State *L) {
     CXCursor cur = toCursor(L, 1);
     unsigned int nArgs = clang_Cursor_getNumArguments(cur);
@@ -590,12 +599,20 @@ static int l_resultType(lua_State *L) {
     return 1;
 }
 
+static int l_cursorEqual(lua_State *L) {
+    CXCursor cur1 = toCursor(L, 1);
+    CXCursor cur2 = toCursor(L, 2);
+    lua_pushboolean(L, clang_equalCursors(cur1, cur2));
+    return 1;
+}
+
 static luaL_Reg cursor_functions[] = {
     {"children", l_children},
     {"kind", l_kind},
     {"name", l_name},
     {"__tostring", l_name},
     {"displayName", l_displayName},
+    {"parent", l_parent},
     {"arguments", l_arguments},
     {"type", l_type},
     {"access", l_access},
@@ -606,6 +623,7 @@ static luaL_Reg cursor_functions[] = {
     {"isStatic", l_isStatic},
     {"isVirtual", l_isVirtual},
     {"resultType", l_resultType},
+    {"__eq", l_cursorEqual},
     {NULL, NULL}
 };
 
@@ -691,7 +709,7 @@ void newMetatable(lua_State *L, const char * name, luaL_Reg *reg) {
     lua_setfield(L, -2, "__index");
 }
 
-extern "C" int luaopen_luaclang(lua_State *L) {
+extern "C" int luaopen_parser(lua_State *L) {
     newMetatable(L, LCM_INDEX, index_functions);
     newMetatable(L, LCM_TU, tu_functions);
     newMetatable(L, LCM_CURSOR, cursor_functions);

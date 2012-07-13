@@ -1,9 +1,9 @@
-luaclang
-=========
+luaclang-parser
+===============
 
 A Lua binding to the [`libclang`](http://clang.llvm.org/doxygen/group__CINDEX.html) library, which allows you to parse C and C++ code using the Clang compiler.
 
-`luaclang` provides an object-oriented interface over the `libclang` API. As of right now, a meaningful subset of `libclang` API is available, allowing you to write C/C++ header parsers, file diagnostics (warnings, errors) and code completion.
+`luaclang-parser` provides an object-oriented interface over the `libclang` API. As of right now, a meaningful subset of `libclang` API is available, allowing you to write C/C++ header parsers, file diagnostics (warnings, errors) and code completion.
 
 No more error-prone hand-written header/documentation parsers, yay! :)
 
@@ -16,7 +16,7 @@ Requirements
 Overview
 ========
 
-`libclang` provides a cursor-based API to the abstract syntax tree (AST) of the C/C++ source files. This means that you can see what the compiler sees. These are the main classes used in `libclang`/`luaclang`:
+`libclang` provides a cursor-based API to the abstract syntax tree (AST) of the C/C++ source files. This means that you can see what the compiler sees. These are the main classes used in `libclang`/`luaclang-parser`:
 
 * `Index` - represents a set of translation units that could be linked together
 * `TranslationUnit` - represents a source file
@@ -26,7 +26,7 @@ Overview
 Examples
 ========
 
-A simple code browser demonstrating the abilities of `luaclang` is provided in `cindex.lua`. It takes command line arguments as the Clang compiler would and passes them to `TranslationUnit:parse(args)` (see below). Then it processes the headers and gathers information about classes, methods, functions and their argument, and saves this information into a SQLite3 database `code.db` with the following schema:
+A simple code browser demonstrating the abilities of `luaclang-parser` is provided in `cindex.lua`. It takes command line arguments as the Clang compiler would and passes them to `TranslationUnit:parse(args)` (see below). Then it processes the headers and gathers information about classes, methods, functions and their argument, and saves this information into a SQLite3 database `code.db` with the following schema:
 
 	CREATE TABLE args (ismethod, parent, name, idx, type, const, defval);
 	CREATE TABLE classes (module, name, parent);
@@ -61,10 +61,10 @@ Just for a taste on how big the Qt framework is:
 Reference
 =========
 
-`luaclang`
+`luaclang-parser`
 ----------
 
-Use `local luaclang = require "luaclang"` to load the module. It exports one function:
+Use `local parser = require "luaclang-parser"` to load the module. It exports one function:
 
 * `createIndex(excludePch : boolean, showDiagnostics : boolean) -> Index`
 
@@ -113,9 +113,15 @@ Use `local luaclang = require "luaclang"` to load the module. It exports one fun
 `Cursor`
 --------
 
+You can compare whether two `Cursor`s represent the same element using the standard `==` Lua operator.
+
 * `Cursor:children() -> { Cursor * }`
 
     Binding over [clang_visitChildren](http://clang.llvm.org/doxygen/group__CINDEX__CURSOR__TRAVERSAL.html#ga5d0a813d937e1a7dcc35f206ad1f7a91). This is the main function for AST traversal. Traverses the direct descendats of a given cursor and collects them in a table. If no child cursors are found, returns an empty table.
+
+* `Cursor:parent() -> Cursor`
+
+	Binding for [clang_getCursorSemanticParent](http://clang.llvm.org/doxygen/group__CINDEX__CURSOR__MANIP.html#gabc327b200d46781cf30cb84d4af3c877). Returns a cursor to the semantic parent of a given element. For example, for a method cursor, returns its class. For a global declaration, returns the translation unit cursor.
 
 * `Cursor:name() -> string`
 
@@ -167,6 +173,8 @@ Use `local luaclang = require "luaclang"` to load the module. It exports one fun
 
 `Type`
 ------
+
+You can compare whether two `Type`s represent the same type using the standard `==` Lua operator.
 
 * `Type:name() -> string`
 

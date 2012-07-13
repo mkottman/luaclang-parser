@@ -1,4 +1,6 @@
-local clang = require 'luaclang'
+package.cpath = package.cpath .. ';../build/?.so'
+
+local clang = require 'luaclang-parser'
 local sqlite3 = require 'luasql.sqlite3'.sqlite3
 
 -- from http://stevedonovan.github.com/Penlight/api/modules/pl.text.html#format_operator
