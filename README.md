@@ -1,8 +1,6 @@
 luaclang-parser
 ===============
 
-This version is a very minor fork of [the original](https://github.com/mkottman/luaclang-parser) which works with version 3.1 of LLVM from [this PPA repository](https://launchpad.net/~dr-graef/+archive/llvm-3.1.quantal) so it is easy to install with Ubuntu which does not ship with a version that works out of the box (13.04 may well do).
-
 A Lua binding to the [`libclang`](http://clang.llvm.org/doxygen/group__CINDEX.html) library, which allows you to parse C and C++ code using the Clang compiler.
 
 `luaclang-parser` provides an object-oriented interface over the `libclang` API. As of right now, a meaningful subset of `libclang` API is available, allowing you to write C/C++ header parsers, file diagnostics (warnings, errors) and code completion.

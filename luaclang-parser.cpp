@@ -446,7 +446,6 @@ static const char * cursorKindStr(CXCursorKind kind) {
     case CXCursor_SEHTryStmt: return "SEHTryStmt";
     case CXCursor_SEHExceptStmt: return "SEHExceptStmt";
     case CXCursor_SEHFinallyStmt: return "SEHFinallyStmt";
-/*    case CXCursor_MSAsmStmt: return "MSAsmStmt"; */
     case CXCursor_NullStmt: return "NullStmt";
     case CXCursor_DeclStmt: return "DeclStmt";
     case CXCursor_TranslationUnit: return "TranslationUnit";
